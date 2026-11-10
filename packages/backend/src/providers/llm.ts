@@ -185,6 +185,10 @@ async function chatOnce<S extends z.ZodType>(opts: ChatJsonOptions<S>, circuit =
     ...(spec.jsonMode && opts.json !== false ? { response_format: { type: "json_object" } } : {}),
     ...(spec.extra ?? {}),
   };
+  // kimi-k2.7-code rejects every temperature except 1 (400 "invalid temperature: only 1 is allowed
+  // for this model"). Omitting the field is accepted. Drop it after extra so opts.temperature,
+  // LLM_EXTRA_JSON, or a preset extra cannot put a forbidden value back. Other models are unchanged.
+  if (spec.model === "kimi-k2.7-code") delete body.temperature;
 
   const receipt = await paidRequest(
     { ...request, fallbackFor },
